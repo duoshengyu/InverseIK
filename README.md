@@ -20,28 +20,15 @@ usage:
 3.Change the Configuration to Debug.
 
 4.Run.
-In this step you may see "glew32.dll are not in your compute" something like this,
-go "lib" sub folder and copy the "glew32.dll" file to "Release" folder.After this,
-it should work.
-  
-You can umcomment "#define (someeffect)" to see different effect.
 
+prerequest:
+
+Install directx SDK.
+  
 Screenshots:
 
-1.one dambreak.
+![image](https://github.com/duoshengyu/InverseIK/blob/master/screenshots/1.PNG)
 
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/1.png)
+![image](https://github.com/duoshengyu/InverseIK/blob/master/screenshots/2.PNG)
 
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/2.png)
-
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/3.png)
-
-2.two dambreak.
-
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/4.png)
-
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/5.png)
-
-3.obstcle.
-
-![image](https://github.com/duoshengyu/FLIP_FLUID/blob/master/screenshots/6.png)
+![image](https://github.com/duoshengyu/InverseIK/blob/master/screenshots/3.PNG)
