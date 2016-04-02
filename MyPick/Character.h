@@ -1,3 +1,7 @@
+//------------------------------------------------------------------------------
+//My character class inherit from BoneHierarchyLoader.h
+//------------------------------------------------------------------------------
+
 #ifndef Character_H
 #define Character_H
 
@@ -26,7 +30,7 @@ public:
 	ID3DXAnimationController* GetController();
 
 	D3DXFRAME* GetBone(string name);
-	//获取根骨
+	//get root bone
 	Bone * getPBone(){ return (Bone*)m_pRootBone; }
 
 	LPDIRECT3DDEVICE9   GetDevice();
@@ -52,11 +56,12 @@ private:
 	ID3DXAnimationController *m_pAnimControl;
 
 	LPDIRECT3DDEVICE9 m_pDevice;
-
+	//effect point
 	LPD3DXEFFECT m_pEffect;
 
 	D3DXMATRIX m_mxWorld;
 
+	//get diameter of bounding ball
 	//获取模型包围球直径
 	float m_fBoundingRadius;
 protected:

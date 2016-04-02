@@ -2,8 +2,12 @@
 #include "DirectInputClass.h"
 #include "D3DUtil.h"
 
+//-----------------------------------------------------------------------------
+// Constructor
+//-----------------------------------------------------------------------------
 Camera::Camera()
 {
+	//Set identity matrix
 	D3DXMatrixIdentity(&mWorld);
 	D3DXMatrixIdentity(&mView);
 	D3DXMatrixIdentity(&mProj);
@@ -13,7 +17,7 @@ Camera::Camera()
 	mUpW = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	mLookW = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 
-	//改变速率
+	//change Sensitivity
 	mSpeed = 50.0f;
 }
 const D3DXMATRIX& Camera::world() const
@@ -54,7 +58,9 @@ D3DXVECTOR3& Camera::pos()
 {
 	return mPosW;
 }
-
+//-----------------------------------------------------------------------------
+// LookAt implement input(eye, target, up)
+//-----------------------------------------------------------------------------
 void Camera::lookAt(D3DXVECTOR3& pos, D3DXVECTOR3& target, D3DXVECTOR3& up)
 {
 	D3DXVECTOR3 L = target - pos;
@@ -78,7 +84,9 @@ void Camera::lookAt(D3DXVECTOR3& pos, D3DXVECTOR3& target, D3DXVECTOR3& up)
 
 	mViewProj = mView * mProj;
 }
-
+//-----------------------------------------------------------------------------
+// project matrix
+//-----------------------------------------------------------------------------
 void Camera::setLens(float fov, float aspect, float nearZ, float farZ)
 {
 	D3DXMatrixPerspectiveFovLH(&mProj, fov, aspect, nearZ, farZ);
@@ -92,7 +100,7 @@ void Camera::setSpeed(float s)
 
 void Camera::update(float dt)
 {
-	//w s a d键改变不同的相机坐标向量
+	//press w s a d change diffrent vector
 	D3DXVECTOR3 dir(0.0f, 0.0f, 0.0f);
 	if (gDInput->keyDown(DIK_W))
 		dir += mLookW;
@@ -103,12 +111,12 @@ void Camera::update(float dt)
 	if (gDInput->keyDown(DIK_A))
 		dir -= mRightW;
 
-	//改变位置
+	//change position of camera
 	D3DXVec3Normalize(&dir, &dir);
 	D3DXVECTOR3 newPos = mPosW + dir*mSpeed*dt;
 
 	mPosW = newPos;
-	//改变朝向
+	//change orientation when push the right button of mouse
 	float pitch = 0.0f;
 	float yAngle = 0.0f;
 	if (gDInput->mouseButtonDown(1))
@@ -118,28 +126,30 @@ void Camera::update(float dt)
 	}
 
 
-	// 绕右向量旋转相机的look和up向量
+	// rotate camera with right vector
 	D3DXMATRIX R;
 	D3DXMatrixRotationAxis(&R, &mRightW, pitch);
 	D3DXVec3TransformCoord(&mLookW, &mLookW, &R);
 	D3DXVec3TransformCoord(&mUpW, &mUpW, &R);
 
 
-	// 绕世界的y轴旋转相机的轴，即左右方向
+	//rotate with y axis(turn left or right)
 	D3DXMatrixRotationY(&R, yAngle);
 	D3DXVec3TransformCoord(&mRightW, &mRightW, &R);
 	D3DXVec3TransformCoord(&mUpW, &mUpW, &R);
 	D3DXVec3TransformCoord(&mLookW, &mLookW, &R);
 
 
-	// 重建视景矩阵
+	// rebuild view matrix
 	buildView();
 	mViewProj = mView * mProj;
 }
-
+//--------------------------------------------------------------------------------------
+// Desc: calculate the view matrix
+//--------------------------------------------------------------------------------------
 void Camera::buildView()
 {
-	// 使相机的轴相互垂直且单位化
+	// normalrize and cross product to get right vector
 	D3DXVec3Normalize(&mLookW, &mLookW);
 
 	D3DXVec3Cross(&mUpW, &mLookW, &mRightW);
@@ -148,7 +158,7 @@ void Camera::buildView()
 	D3DXVec3Cross(&mRightW, &mUpW, &mLookW);
 	D3DXVec3Normalize(&mRightW, &mRightW);
 
-	// 填写视景体矩阵
+	// write view matrix
 
 	float x = -D3DXVec3Dot(&mPosW, &mRightW);
 	float y = -D3DXVec3Dot(&mPosW, &mUpW);

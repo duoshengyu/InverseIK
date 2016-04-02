@@ -1,3 +1,6 @@
+//------------------------------------------------------------------------------
+//simple camera class
+//------------------------------------------------------------------------------
 #ifndef CAMERA_H
 #define CAMERA_H
 
@@ -9,10 +12,10 @@ class Camera
 public:
 	Camera();
 
-	const D3DXMATRIX& view() const;
-	const D3DXMATRIX& proj() const;
-	const D3DXMATRIX& viewProj() const;
-	const D3DXMATRIX& world() const;
+	const D3DXMATRIX& view() const;					//get view matrix
+	const D3DXMATRIX& proj() const;					//get project matrix
+	const D3DXMATRIX& viewProj() const;				//get proj * view
+	const D3DXMATRIX& world() const;				//get world matrix
 	const D3DXVECTOR3& right() const;
 	const D3DXVECTOR3& up() const;
 	const D3DXVECTOR3& look() const;
@@ -34,7 +37,7 @@ protected:
 	D3DXMATRIX mProj;
 	D3DXMATRIX mViewProj;
 
-	//定义相机坐标系的向量
+	//camera vectors
 	D3DXVECTOR3 mPosW;
 	D3DXVECTOR3 mRightW;
 	D3DXVECTOR3 mUpW;

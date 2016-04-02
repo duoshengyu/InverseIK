@@ -4,7 +4,7 @@
 #pragma warning(disable:4996)
 extern IDirect3DDevice9* g_pDevice;
 //--------------------------------------------------------------------------------------
-// Desc: 为骨骼或网格名称的字符串分配内存
+// Desc: allocate memory
 //--------------------------------------------------------------------------------------
 HRESULT AllocateName(LPCSTR Name, LPSTR* pNewName)
 {
@@ -25,13 +25,13 @@ HRESULT AllocateName(LPCSTR Name, LPSTR* pNewName)
 }
 
 //-----------------------------------------------------------------------------
-// 构造函数
+// Constructor
 //-----------------------------------------------------------------------------
 BoneHierarchyLoader::BoneHierarchyLoader() : m_pMA(NULL)
 {
 }
 //-----------------------------------------------------------------------------
-// Desc: 设置m_pMA便于获取调色板
+// Desc: set a character point easy to access palette
 //-----------------------------------------------------------------------------
 HRESULT BoneHierarchyLoader::SetMA(THIS_ Character *pMA)
 {
@@ -40,7 +40,7 @@ HRESULT BoneHierarchyLoader::SetMA(THIS_ Character *pMA)
 	return S_OK;
 }
 //--------------------------------------------------------------------------------------
-// Desc: 创建框架, 仅仅是分配内存和初始化,还没有对其成员赋予合适的值
+// Desc: create framework , and allocate memory ,has no initiated to Bone
 //--------------------------------------------------------------------------------------
 HRESULT BoneHierarchyLoader::CreateFrame(LPCSTR Name, LPD3DXFRAME* ppNewFrame)
 {
@@ -49,15 +49,15 @@ HRESULT BoneHierarchyLoader::CreateFrame(LPCSTR Name, LPD3DXFRAME* ppNewFrame)
 
 	*ppNewFrame = NULL;
 
-	// 为框架指定名称
-	pFrame = new Bone;  // 创建框架结构对象
+	// set a name to frame
+	pFrame = new Bone;  //create
 	if (FAILED(AllocateName(Name, (LPSTR*)&pFrame->Name)))
 	{
 		delete pFrame;
 		return hr;
 	}
 
-	// 初始化D3DXFRAME_DERIVED结构其它成员变量
+	// initiate to identity matrix
 	D3DXMatrixIdentity(&pFrame->TransformationMatrix);
 	D3DXMatrixIdentity(&pFrame->CombinedTransformationMatrix);
 
@@ -73,7 +73,7 @@ HRESULT BoneHierarchyLoader::CreateFrame(LPCSTR Name, LPD3DXFRAME* ppNewFrame)
 }
 
 //-----------------------------------------------------------------------------
-// Desc: 被D3DX调用当读取一个骨架的蒙皮网格
+// Desc: read the skinning
 //-----------------------------------------------------------------------------
 HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 	LPCSTR Name,
@@ -103,14 +103,14 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 
 	ZeroMemory(pMC, sizeof(BoneMesh));
 
-	//如果是一个静态网格退出
+	//if static mesh break;
 	if (pSkinInfo == NULL)
 	{
 		hr = S_OK;
 		goto e_Exit;
 	}
 
-	// 只支持mesh type
+	//only support mesh type
 	if (pMeshData->Type != D3DXMESHTYPE_MESH)
 	{
 		hr = E_FAIL; goto e_Exit;
@@ -120,14 +120,14 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 		AllocateName(Name, &pMC->Name);
 
 
-	//先复制网格
+	//acopy mesh first
 	pMC->MeshData.Type = pMeshData->Type;
 	pMC->MeshData.pMesh = pMeshData->pMesh;
 	pMC->MeshData.pMesh->AddRef();
 
-	//复制邻接信息
+	//copy link information
 	{
-		DWORD dwNumFaces = pMC->MeshData.pMesh->GetNumFaces();//面数
+		DWORD dwNumFaces = pMC->MeshData.pMesh->GetNumFaces();//number of faces
 		pMC->pAdjacency = new DWORD[3 * dwNumFaces];
 		if (pMC->pAdjacency == NULL)
 		{
@@ -137,10 +137,10 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 		CopyMemory(pMC->pAdjacency, pAdjacency, 3 * sizeof(DWORD)* dwNumFaces);
 	}
 
-	// 不管Effect指针
+	//set effects to NULL first
 	pMC->pEffects = NULL;
 
-	// 复值材质
+	//copy material
 	pMC->NumMaterials = max(1, NumMaterials);
 	pMC->pMaterials = new D3DXMATERIAL[pMC->NumMaterials];
 	pMC->ppTextures = new LPDIRECT3DTEXTURE9[pMC->NumMaterials];
@@ -156,12 +156,12 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 		{
 			if (pMC->pMaterials[i].pTextureFilename)
 			{
-				// 获取文件名
+				// get file name
 				char sNewPath[MAX_PATH];
 				{
 					strcpy(sNewPath, "resources/meshes/");
 					strcat(sNewPath, pMC->pMaterials[i].pTextureFilename);
-					// 创建3d纹理
+					// create 3d texture
 					if (FAILED(D3DXCreateTextureFromFile(pd3dDevice,
 						sNewPath,
 						&pMC->ppTextures[i])))
@@ -172,7 +172,7 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 				pMC->ppTextures[i] = NULL;
 		}
 	}
-	else    //默认的材质
+	else    //default material
 	{
 		ZeroMemory(&pMC->pMaterials[0].MatD3D, sizeof(D3DMATERIAL9));
 		pMC->pMaterials[0].MatD3D.Diffuse.r = 0.5f;
@@ -182,11 +182,11 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 		pMC->pMaterials[0].pTextureFilename = NULL;
 	}
 
-	//保存蒙皮信息
+	//save skinning information
 	pMC->pSkinInfo = pSkinInfo;
 	pSkinInfo->AddRef();
 
-	// 从蒙皮信息中获取骨头的偏离矩阵
+	//get transform matrix from skinning information
 	pMC->pBoneOffsetMatrices = new D3DXMATRIX[pSkinInfo->GetNumBones()];
 	if (pMC->pBoneOffsetMatrices == NULL)
 	{
@@ -198,14 +198,14 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 	}
 
 	//
-	//决定工作集大小
+	//decide the number of work set
 	//
 	{
 		UINT iPaletteSize = 26;
 		pMC->NumPaletteEntries = min(iPaletteSize, pMC->pSkinInfo->GetNumBones());
 	}
 
-	// 获取蒙皮网格- 改变顶点的数据结构，加入权值和索引
+	// changing vertex data structure, add weights and index
 	hr = pMC->pSkinInfo->ConvertToIndexedBlendedMesh(pMC->MeshData.pMesh,
 		D3DXMESH_MANAGED | D3DXMESHOPT_VERTEXCACHE,
 		pMC->NumPaletteEntries,
@@ -220,7 +220,7 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 	if (FAILED(hr))
 		goto e_Exit;
 
-	// 确定角色的工作集大小足够大
+	// Determine the working set of character is large enough
 	// 一个骨头数组，在渲染角色是用作工作集
 	if (m_pMA->m_dwWorkingPaletteSize < pMC->NumPaletteEntries)
 	{
@@ -236,7 +236,7 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 			goto e_Exit;
 		}
 	}
-	// 确定顶点格式
+	// determine vertex type
 	{
 		DWORD dwOldFVF = pMC->pWorkingMesh->GetFVF();
 		DWORD dwNewFVF = (dwOldFVF & D3DFVF_POSITION_MASK) | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_LASTBETA_UBYTE4;
@@ -253,7 +253,7 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 			pMC->pWorkingMesh->Release();
 			pMC->pWorkingMesh = pMesh;
 
-			//确定包含法向量
+			//conform contain normal
 			if (!(dwOldFVF & D3DFVF_NORMAL))
 			{
 				hr = D3DXComputeNormals(pMC->pWorkingMesh, NULL);
@@ -263,7 +263,7 @@ HRESULT BoneHierarchyLoader::CreateMeshContainer(THIS_
 		}
 	}
 
-	//声明顶点类型
+	//Statement vertex type
 	D3DVERTEXELEMENT9 pDecl[MAX_FVF_DECL_SIZE];
 	D3DVERTEXELEMENT9 * pDeclCur;
 	hr = pMC->pWorkingMesh->GetDeclaration(pDecl);

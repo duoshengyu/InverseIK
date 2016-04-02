@@ -7,18 +7,18 @@ using namespace std;
 extern ofstream g_debug;
 extern D3DApp * g_d3dApp;
 extern DirectInput* gDInput;
-// 取得正方向以及获取我们的骨骼链
+//get the direction of head looking to
 InverseKinematics::InverseKinematics(Character* pCharacter)
 {
 	m_pCharacter = pCharacter;
 
-	//头骨
+	//get head bone
 	m_pHeadBone = (Bone*)D3DXFrameFind(m_pCharacter->getPBone(), "Head");
 
 	if (m_pHeadBone != NULL)
 	{
-		// 为头骨计算正方向
-		// 移除平移
+		// calculate forward direction 
+		// remove translate 
 		D3DXMATRIX headMatrix = m_pHeadBone->CombinedTransformationMatrix;
 		headMatrix._41 = 0.0f;
 		headMatrix._42 = 0.0f;
@@ -29,13 +29,13 @@ InverseKinematics::InverseKinematics(Character* pCharacter)
 		if (D3DXMatrixInverse(&toHeadSpace, NULL, &headMatrix) == NULL)
 			return;
 
-		// 由-z变道头部空间
+		//transform -z to head space
 		D3DXVECTOR4 vec;
 		D3DXVec3Transform(&vec, &D3DXVECTOR3(0, 0, -1), &toHeadSpace);
 		m_headForward = D3DXVECTOR3(vec.x, vec.y, vec.z);
 	}
 
-	// 四肢骨骼和位置
+	//get arm, leg, and their position 
 	U_R_Arm = (Bone*)D3DXFrameFind(m_pCharacter->getPBone(), "Bone17");
 	U_L_Arm = (Bone*)D3DXFrameFind(m_pCharacter->getPBone(), "Bone20");
 	L_R_Arm = (Bone*)D3DXFrameFind(m_pCharacter->getPBone(), "Bone18");
@@ -63,13 +63,16 @@ InverseKinematics::InverseKinematics(Character* pCharacter)
 	RLegTarget.z = R_Foot->CombinedTransformationMatrix._43;
 }
 
-// 头部IK
+//-----------------------------------------------------------------------------
+// IK of head, look to mouse position
+// This has something wrong, shound get backbuffer width and height from d3d 
+//-----------------------------------------------------------------------------
 void InverseKinematics::UpdateHeadIK()
 {
 	if (m_pHeadBone == NULL)
 		return;
 
-	//看向光标的位置
+	//look at cursor
 	POINT p;
 	GetCursorPos(&p);
 	p.x = max(min(p.x, 800), 0);
@@ -78,17 +81,17 @@ void InverseKinematics::UpdateHeadIK()
 	float y = (p.y - 300) / 600.0f;
 	D3DXVECTOR3 lookAt(x, 1.5f - y, -1.0f);
 
-	// 应用IK
+	// apply IK
 	ApplyLookAtIK(lookAt, D3DXToRadian(60.0f));
 }
 
-// 手部IK测试函数
+//-----------------------------------------------------------------------------
+// this is just a test function, test arm IK
+//-----------------------------------------------------------------------------
 void InverseKinematics::UpdateArmIK()
 {
 	if (U_L_Arm == NULL || L_L_Arm == NULL || L_Hand == NULL)
 		return;
-
-	//指向光标
 	POINT p;
 	GetCursorPos(&p);
 	p.x = max(min(p.x, 800), 0);
@@ -99,6 +102,9 @@ void InverseKinematics::UpdateArmIK()
 
 	ApplyArmIK(D3DXVECTOR3(0, 0, -1), target);
 }
+//-----------------------------------------------------------------------------
+// leg,	hand IK
+//-----------------------------------------------------------------------------
 void InverseKinematics::UpdateIK()
 {
 	if (U_L_Arm == NULL || L_L_Arm == NULL || L_Hand == NULL || U_R_Arm == NULL || L_R_Arm == NULL || R_Hand == NULL ||
@@ -110,40 +116,44 @@ void InverseKinematics::UpdateIK()
 	ApplyIK(L_Thigh, L_Calf, L_Foot, D3DXVECTOR3(0, 0, 1), LLegTarget);
 	ApplyIK(R_Thigh, R_Calf, R_Foot, D3DXVECTOR3(0, 0, 1), RLegTarget);
 }
-
+//-----------------------------------------------------------------------------
+// Head IK
+//-----------------------------------------------------------------------------
 void InverseKinematics::ApplyLookAtIK(D3DXVECTOR3 &lookAtTarget, float maxAngle)
 {
-	//在局部空间进行
+	//do this in local space
 	D3DXMATRIX mtxToLocal;
 	D3DXMatrixInverse(&mtxToLocal, NULL, &m_pHeadBone->CombinedTransformationMatrix);
 
-	// 把目标变换到头部空间
+	//transform target to head local space 
 	D3DXVECTOR3 localLookAt;
 	D3DXVec3TransformCoord(&localLookAt, &lookAtTarget, &mtxToLocal);
 
 	D3DXVec3Normalize(&localLookAt, &localLookAt);
 
-	// 计算旋转轴和角度
+	//calculate axis and rotate angle
 	D3DXVECTOR3 localRotationAxis;
 	D3DXVec3Cross(&localRotationAxis, &m_headForward, &localLookAt);
 	D3DXVec3Normalize(&localRotationAxis, &localRotationAxis);
 
 	float localAngle = acosf(D3DXVec3Dot(&m_headForward, &localLookAt));
 
-	// 限制角度	
+	//limit angle	
 	localAngle = min(localAngle, maxAngle);
 
-	// 把变换应用到骨头
+	// apply to head bone
 	D3DXMATRIX rotation;
 	D3DXMatrixRotationAxis(&rotation, &localRotationAxis, localAngle);
 	m_pHeadBone->CombinedTransformationMatrix = rotation * m_pHeadBone->CombinedTransformationMatrix;
 
-	// 更新到子骨
+	// update to children bone
 	if (m_pHeadBone->pFrameFirstChild)
 		m_pCharacter->UpdateMatrices((Bone*)m_pHeadBone->pFrameFirstChild, &m_pHeadBone->CombinedTransformationMatrix);
 }
 
-//左手测试
+//-----------------------------------------------------------------------------
+// this is just a test function, test left hand IK. You can ignore this function
+//-----------------------------------------------------------------------------
 void InverseKinematics::ApplyArmIK(D3DXVECTOR3 &hingeAxis, D3DXVECTOR3 &target)
 {
 
@@ -228,11 +238,13 @@ void InverseKinematics::ApplyArmIK(D3DXVECTOR3 &hingeAxis, D3DXVECTOR3 &target)
 	UpdateCurMat(U_L_Arm,L_L_Arm);
 	UpdateCurMat(L_L_Arm, L_Hand);
 }
-//4肢IK函数
+//-----------------------------------------------------------------------------
+//Leg, Hand IK function, note: just support 2 bone IK
+//First, calculate middle joint angle(Elbow and knee), and target angle then rotate
+//-----------------------------------------------------------------------------
 void InverseKinematics::ApplyIK(Bone *Start, Bone *Joint, Bone *End, D3DXVECTOR3 &hingeAxis, D3DXVECTOR3 &target)
 {
-	// 2骨骼IK，我们首先计算中间关节（肘和膝）的夹角，转换后，如一骨骼一样选择到目标即可
-	// 获取3个关节的位置
+	// get 3 joint position(start, joint, end)
 	D3DXVECTOR3 startPosition = D3DXVECTOR3(Start->CombinedTransformationMatrix._41, Start->CombinedTransformationMatrix._42, Start->CombinedTransformationMatrix._43);
 	D3DXVECTOR3 jointPosition = D3DXVECTOR3(Joint->CombinedTransformationMatrix._41, Joint->CombinedTransformationMatrix._42, Joint->CombinedTransformationMatrix._43);
 	D3DXVECTOR3 endPosition = D3DXVECTOR3(End->CombinedTransformationMatrix._41, End->CombinedTransformationMatrix._42, End->CombinedTransformationMatrix._43);
@@ -245,41 +257,42 @@ void InverseKinematics::ApplyIK(Bone *Start, Bone *Joint, Bone *End, D3DXVECTOR3
 	float distStartToJoint = D3DXVec3Length(&startToJoint);
 	float distJointToEnd = D3DXVec3Length(&jointToEnd);
 
-	// 计算中间关节的选择
-	// 先计算当前角度和目标角度
+	// calculate current angle and target angle
 	float wantedJointAngle = 0.0f;
 
 	if (distStartToTarget >= distStartToJoint + distJointToEnd)
 	{
-		// 起点到终点的距离大于最大长度使角度为180
+		// biggest angle is 180
 		wantedJointAngle = D3DXToRadian(180.0f);
 	}
 	else
 	{
-		//余弦定理计算角度
+		//Law of cosines
 		float cosAngle = (distStartToJoint * distStartToJoint + distJointToEnd * distJointToEnd - distStartToTarget * distStartToTarget) / (2.0f * distStartToJoint * distJointToEnd);
 		wantedJointAngle = acosf(cosAngle);
 	}
 
-	//单位化
+	//Normalize
 	D3DXVECTOR3 nmlStartToJoint = startToJoint;
 	D3DXVECTOR3 nmlJointToEnd = jointToEnd;
 	D3DXVec3Normalize(&nmlStartToJoint, &nmlStartToJoint);
 	D3DXVec3Normalize(&nmlJointToEnd, &nmlJointToEnd);
 
-	//当前角度
+	//current angle
 	float currentJointAngle = acosf(D3DXVec3Dot(&(-nmlStartToJoint), &nmlJointToEnd));
 
-	//计算旋转矩阵
+	//rotate matrix
 	float diffJointAngle = wantedJointAngle - currentJointAngle;
 	D3DXMATRIX rotation;
 	D3DXMatrixRotationAxis(&rotation, &hingeAxis, diffJointAngle);
 
-	//把旋转应用到骨骼
+	//apply to bone
 	Joint->TransformationMatrix = rotation * Joint->TransformationMatrix;
 
-	// 计算新末端节点位置
-	// 在世界坐标计算然后再转换到局部，原因是为之后的帧的更新做好准备
+
+	// calculate new end point position
+	// calculate in world space and then transform to local space
+	
 	D3DXMATRIX tempMatrix = Joint->CombinedTransformationMatrix;
 	tempMatrix._41 = 0.0f;
 	tempMatrix._42 = 0.0f;
@@ -295,7 +308,7 @@ void InverseKinematics::ApplyIK(Bone *Start, Bone *Joint, Bone *End, D3DXVECTOR3
 	D3DXVECTOR3 newEndPosition;
 	D3DXVec3Add(&newEndPosition, &newJointToEnd, &jointPosition);
 
-	// 计算总体旋转
+	// total rotation
 	D3DXMATRIX mtxToLocal;
 	D3DXMatrixInverse(&mtxToLocal, NULL, &Start->CombinedTransformationMatrix);
 
@@ -314,12 +327,12 @@ void InverseKinematics::ApplyIK(Bone *Start, Bone *Joint, Bone *End, D3DXVECTOR3
 	D3DXVec3Normalize(&localAxis, &localAxis);
 	float localAngle = acosf(D3DXVec3Dot(&localNewEnd, &localTarget));
 
-	// 应用旋转到骨头上
+	// apply to bone
 	D3DXMatrixRotationAxis(&rotation, &localAxis, localAngle);
 	Start->CombinedTransformationMatrix = rotation * Start->CombinedTransformationMatrix;
 	Start->TransformationMatrix = rotation * Start->TransformationMatrix;
 
-	// 更新子骨
+	// update children bone
 	if (Start->pFrameFirstChild)
 		m_pCharacter->UpdateMatrices((Bone*)Start->pFrameFirstChild,
 		&Start->CombinedTransformationMatrix);

@@ -1,3 +1,6 @@
+//------------------------------------------------------------------------------
+//Deal with I/O of directx 
+//------------------------------------------------------------------------------
 #ifndef DIRECT_INPUT_H
 #define DIRECT_INPUT_H
 
@@ -10,7 +13,7 @@ public:
 	DirectInput(DWORD keyboardCoopFlags, DWORD mouseCoopFlags);
 	~DirectInput();
 
-	void poll();
+	void poll();							//get I/O state
 	bool keyDown(char key);
 	bool mouseButtonDown(int button);
 	float mouseDX();
@@ -23,11 +26,12 @@ private:
 	DirectInput& operator=(const DirectInput& rhs);
 
 private:
+	//device
 	IDirectInput8*       mDInput;
-
+	//keyboard
 	IDirectInputDevice8* mKeyboard;
 	char                 mKeyboardState[256];
-
+	//mouse
 	IDirectInputDevice8* mMouse;
 	DIMOUSESTATE2        mMouseState;
 };

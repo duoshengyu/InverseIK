@@ -1,6 +1,8 @@
-//=============================================================================
-// Direct3D应用类提供一个程序的基本框架和接口.
-//=============================================================================
+//------------------------------------------------------------------------------
+//Simple directx demo application class.  
+//You can create your application simply derive from App class
+//You need to overwrite framework methods.
+//------------------------------------------------------------------------------
 
 #ifndef D3DAPP_H
 #define D3DAPP_H
@@ -17,15 +19,14 @@ public:
 	HINSTANCE getAppInst();
 	HWND      getMainWnd();
 
-	// 框架方法，根据需要重写
+	// frame functions
 	virtual bool checkDeviceCaps()     { return true; }
 	virtual void onLostDevice()        {}
 	virtual void onResetDevice()       {}
 	virtual void updateScene(float dt) {}
 	virtual void drawScene()           {}
 
-	// 默认的窗口创建过程，可重写
-	// direct3D设备的创建, 窗口消息处理函数, 消息循环.
+	// initial functions you also can rewrite it
 	virtual void initMainWindow();
 	virtual void initDirect3D();
 	virtual int run();
@@ -36,18 +37,18 @@ public:
 
 protected:
 
-	std::string mMainWndCaption;//窗口名称
-	D3DDEVTYPE  mDevType;//设备类型
-	DWORD       mRequestedVP;//设备功能要求
+	std::string		mMainWndCaption;//window name
+	D3DDEVTYPE		mDevType;//device type
+	DWORD			mRequestedVP;
 	
-	HINSTANCE             mhAppInst;//程序实例
-	HWND                  mhMainWnd;//窗口句柄
+	HINSTANCE             mhAppInst;//process instant
+	HWND                  mhMainWnd;//handle of window
 	IDirect3D9*           md3dObject;//Direct3D9
 	bool                  mAppPaused;
-	D3DPRESENT_PARAMETERS md3dPP;//设备描述
+	D3DPRESENT_PARAMETERS md3dPP;//device describe
 };
 
-// 全局变量以便获取
+// global variable to easy access
 extern D3DApp* g_d3dApp;
 extern IDirect3DDevice9* g_pDevice;
 

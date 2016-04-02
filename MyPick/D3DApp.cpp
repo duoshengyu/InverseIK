@@ -3,10 +3,12 @@
 D3DApp* g_d3dApp = 0;
 IDirect3DDevice9* g_pDevice = 0;
 
+//-----------------------------------------------------------------------------
+// message process function
+//-----------------------------------------------------------------------------
 LRESULT CALLBACK
 MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// ÏûÏ¢´¦ÀúÖ¯Êı
 	if (g_d3dApp != 0)
 		return g_d3dApp->msgProc(msg, wParam, lParam);
 	else
@@ -44,9 +46,12 @@ HWND D3DApp::getMainWnd()
 {
 	return mhMainWnd;
 }
-
+//-----------------------------------------------------------------------------
+// initiate window
+//-----------------------------------------------------------------------------
 void D3DApp::initMainWindow()
 {
+	//fill window class struct
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = MainWndProc;
@@ -65,7 +70,7 @@ void D3DApp::initMainWindow()
 		PostQuitMessage(0);
 	}
 
-	// ´´½¨´°¿Ú
+	//create window
 
 	RECT R = { 0, 0, 800, 600 };
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
@@ -85,7 +90,7 @@ void D3DApp::initMainWindow()
 
 void D3DApp::initDirect3D()
 {
-	// 1: ´´½¨IDirect3D9 ¶ÔÏE
+	// 1: create IDirect3D9 object
 
 	md3dObject = Direct3DCreate9(D3D_SDK_VERSION);
 	if (!md3dObject)
@@ -95,14 +100,14 @@ void D3DApp::initDirect3D()
 	}
 
 
-	//  2: ÑéÖ¤Ó²¼şÊÇ·ñÖ§³ÖÌØ¶¨µÄÊı¾İ¸ñÊ½ÒÔ¼°È«ÆÁÄ£Ê½
+	//  2: check whether hardware support fullscreen and specify data type.
 
 	D3DDISPLAYMODE mode;
 	md3dObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &mode);
 	HR(md3dObject->CheckDeviceType(D3DADAPTER_DEFAULT, mDevType, mode.Format, mode.Format, true));
 	HR(md3dObject->CheckDeviceType(D3DADAPTER_DEFAULT, mDevType, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
 
-	// 3: ¼EéÒªÇóµÄ´¦ÀúàÜÁ¦
+	// 3: get device information
 
 	D3DCAPS9 caps;
 	HR(md3dObject->GetDeviceCaps(D3DADAPTER_DEFAULT, mDevType, &caps));
@@ -118,7 +123,7 @@ void D3DApp::initDirect3D()
 		devBehaviorFlags & D3DCREATE_HARDWARE_VERTEXPROCESSING)
 		devBehaviorFlags |= D3DCREATE_PUREDEVICE;
 
-	// 4: Ìûì´D3DPRESENT_PARAMETERS ½á¹¹ÌE
+	// 4: fill D3DPRESENT_PARAMETERS struct
 
 	md3dPP.BackBufferWidth = 0;
 	md3dPP.BackBufferHeight = 0;
@@ -136,7 +141,7 @@ void D3DApp::initDirect3D()
 	md3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
 
-	// 5£º´´½¨Direct3DÉè±¸
+	// 5£ºcreate Direct3D device
 
 	HR(md3dObject->CreateDevice(
 		D3DADAPTER_DEFAULT, 
@@ -161,7 +166,7 @@ int D3DApp::run()
 
 	while (msg.message != WM_QUIT)
 	{
-		// ÓĞÏûÏ¢Ôò´¦ÀE
+		// message process
 		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
@@ -193,15 +198,14 @@ int D3DApp::run()
 
 LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	//³ÌĞòÔÚ×ûĞó»¯»¹ÊÇ×ûì¡»¯µÄ×´Ì¬
+	//fullscreen or window
 	static bool minOrMaxed = false;
 
 	RECT clientRect = { 0, 0, 0, 0 };
 	switch (msg)
 	{
 
-		// WM_ACTIVE µ±´°¿Ú¼¤»ûÖÍ·Ç¼¤»ûæ±²úÉE
-		// ·Ç¼¤»ûæ±ÔİÍ£
+		// WM_ACTIVE when application window is active
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE)
 			mAppPaused = true;
@@ -210,10 +214,10 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 
-		// WM_SIZE µ±¸Ä±ä´°¿Ú´óĞ¡Ê±²úÉE
+		// WM_SIZE when size of window change
 	case WM_SIZE:
 		if (g_pDevice)
-		{//¸Ä±äºóÌ¨»º³åÇE
+		{//change the size of back buffer
 			md3dPP.BackBufferWidth = LOWORD(lParam);
 			md3dPP.BackBufferHeight = HIWORD(lParam);
 
@@ -230,7 +234,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				HR(g_pDevice->Reset(&md3dPP));
 				onResetDevice();
 			}
-			// Restored ÊÇ·Ç×ûĞóºÍ·Ç×ûì¡µÄ×´Ì¬.
+			// Restored
 			else if (wParam == SIZE_RESTORED)
 			{
 				mAppPaused = false;
@@ -243,7 +247,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					//±úæ¾ÓÃ»§ÊÇÍÏ¶¯´°¿Ú±ßÔµ¸Ä±ä£¬ÎÒÃÇÔÚWM_EXITSIZEMOVE´¦ÀE
+					//user move the edge of window£¬process at WM_EXITSIZEMOVE
 				}
 				minOrMaxed = false;
 			}
@@ -251,7 +255,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 
-		// WM_EXITSIZEMOVE µ±ÓÃ»§ÊÍ·Å±ßÔµÊ±²úÉE
+		// WM_EXITSIZEMOVE when user release edge
 	case WM_EXITSIZEMOVE:
 		GetClientRect(mhMainWnd, &clientRect);
 		md3dPP.BackBufferWidth = clientRect.right;
@@ -262,12 +266,12 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		return 0;
 
-		// WM_CLOSE µ±µã»÷ÓÒÉÏ½ÇµÄx²úÉE
+		// WM_CLOSE close the window
 	case WM_CLOSE:
 		DestroyWindow(mhMainWnd);
 		return 0;
 
-		// WM_DESTROY µ±´°¿Ú±»´İ»ÙÊ±²úÉE
+		// WM_DESTROY app destroy
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -284,7 +288,7 @@ LRESULT D3DApp::msgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 void D3DApp::enableFullScreenMode(bool enable)
 {
-	// ÇĞ»»µ½È«ÆÁ
+	// turn to fullscreen
 	if (enable)
 	{
 
@@ -301,7 +305,7 @@ void D3DApp::enableFullScreenMode(bool enable)
 		SetWindowLongPtr(mhMainWnd, GWL_STYLE, WS_POPUP);
 		SetWindowPos(mhMainWnd, HWND_TOP, 0, 0, width, height, SWP_NOZORDER | SWP_SHOWWINDOW);
 	}
-	//´°¿ÚÄ£Ê½
+	//window mode
 	else
 	{
 		if (md3dPP.Windowed)
@@ -313,38 +317,37 @@ void D3DApp::enableFullScreenMode(bool enable)
 		md3dPP.BackBufferWidth = 800;
 		md3dPP.BackBufferHeight = 600;
 		md3dPP.Windowed = true;
-
-		//¸Ä±ä´°¿ÚÀàĞÍµ½¸EÑºÃµÄÀàĞÍ
 		SetWindowLongPtr(mhMainWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-		// SetWindowPosÓEetWindowLongPtrÅäºÏÊ¹¸Ä±äÉúĞ§£¬¸EÂ´°¿Ú³ß´E
 		SetWindowPos(mhMainWnd, HWND_TOP, 100, 100, R.right, R.bottom, SWP_NOZORDER | SWP_SHOWWINDOW);
 	}
 
-	// ÖØÖÃÉè±¸
+	//reset device
 	onLostDevice();
 	HR(g_pDevice->Reset(&md3dPP));
 	onResetDevice();
 }
-
+//-----------------------------------------------------------------------------
+// deal with device lost
+//-----------------------------------------------------------------------------
 bool D3DApp::isDeviceLost()
 {
-	//»ñÈ¡Éè±¸×´Ì¬
+	//get state
 	HRESULT hr = g_pDevice->TestCooperativeLevel();
 
-	//Èç¹û¶ªÊ§
+	//if lost
 	if (hr == D3DERR_DEVICELOST)
 	{
 		Sleep(20);
 		return true;
 	}
-	//´úêó£¬ÍË³E
+	//or error
 	else if (hr == D3DERR_DRIVERINTERNALERROR)
 	{
 		MessageBox(0, "Internal Driver Error...Exiting", 0, 0);
 		PostQuitMessage(0);
 		return true;
 	}
-	//ÖØÖÃ
+	//reset
 	else if (hr == D3DERR_DEVICENOTRESET)
 	{
 		onLostDevice();

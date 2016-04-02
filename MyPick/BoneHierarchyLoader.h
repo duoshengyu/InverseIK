@@ -1,4 +1,6 @@
-
+//------------------------------------------------------------------------------
+//BoneHierarchyLoader from D3D samples, a little modified by Yu Duosheng
+//------------------------------------------------------------------------------
 #ifndef BoneHierarchyLoader_H
 #define BoneHierarchyLoader_H
 
@@ -13,31 +15,33 @@ class Character;
 
 struct Bone : public D3DXFRAME
 {
-	D3DXMATRIX CombinedTransformationMatrix;
+	D3DXMATRIX CombinedTransformationMatrix; //transform matrix
 	D3DXMATRIX curWorld;
-	LPD3DXMESH pCylinder = NULL;
+	LPD3DXMESH pCylinder = NULL;		//geometry point
 	bool isPick = false;
 };
 
 struct BoneMesh : public D3DXMESHCONTAINER
 {
-	LPDIRECT3DTEXTURE9*  ppTextures;            //纹理数组
-	LPD3DXMESH           pWorkingMesh;          //work网格
-	DWORD                NumAttributeGroups;    //骨骼数量
-	DWORD                NumInfl;               //每个顶点最多可以影响多少骨骼
-	LPD3DXBUFFER         pBoneCombinationBuf;   //骨骼结合表
+	LPDIRECT3DTEXTURE9*  ppTextures;            //Texture array
+	LPD3DXMESH           pWorkingMesh;          //work mesh
+	DWORD                NumAttributeGroups;    //number of bone
+	DWORD                NumInfl;               //how much a joint can influence bones
+	LPD3DXBUFFER         pBoneCombinationBuf;   //bone link list
 	D3DXMATRIX**         ppBoneMatrixPtrs;      //Provides index to bone matrix lookup
-	D3DXMATRIX*          pBoneOffsetMatrices;   //存放骨骼的初始变换矩阵
-	DWORD                NumPaletteEntries;     //最多有多少骨骼可以影响一个点
-	//D3DXMATRIX*          currentBoneMatrices;   //存放骨骼当前矩阵
+	D3DXMATRIX*          pBoneOffsetMatrices;   //bone`s first transform matrix
+	DWORD                NumPaletteEntries;     //how much bones can influence a joint
+	//D3DXMATRIX*          currentBoneMatrices;   //curren matrix of bone
 };
 
 class BoneHierarchyLoader : public ID3DXAllocateHierarchy
 {
 public:
 	// 回调创建骨头
+	//call back function to create bone
 	STDMETHOD(CreateFrame)(THIS_ LPCSTR Name, LPD3DXFRAME *ppNewFrame);
 	// 回调创建纹理（蒙皮）
+	//call back function to create textrue(skining)
 	STDMETHOD(CreateMeshContainer)(THIS_ LPCSTR Name, CONST D3DXMESHDATA * pMeshData,
 		CONST D3DXMATERIAL * pMaterials, CONST D3DXEFFECTINSTANCE * pEffectInstances,
 		DWORD NumMaterials, CONST DWORD * pAdjacency, LPD3DXSKININFO pSkinInfo,
@@ -50,6 +54,7 @@ public:
 	BoneHierarchyLoader();
 
 	//设置方法
+	//set method
 	HRESULT SetMA(Character *pMA);
 
 private:

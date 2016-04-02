@@ -4,6 +4,9 @@
 using namespace std;
 extern IDirect3DDevice9* g_pDevice;
 extern ofstream g_debug;
+//-----------------------------------------------------------------------------
+// Constructor
+//-----------------------------------------------------------------------------
 Character::Character()
 {
 	m_pRootBone = NULL;
@@ -19,7 +22,9 @@ Character::~Character()
 	boneHierarchy.DestroyFrame(m_pRootBone);
 	if (m_pAnimControl)m_pAnimControl->Release();
 }
-
+//-----------------------------------------------------------------------------
+//Load character from filename
+//-----------------------------------------------------------------------------
 void Character::Load(char fileName[])
 {
 	BoneHierarchyLoader boneHierarchy;
@@ -35,7 +40,7 @@ void Character::Load(char fileName[])
 	D3DXVECTOR3 vCenter;
 	D3DXFrameCalculateBoundingSphere(m_pRootBone, &vCenter, &m_fBoundingRadius);
 
-	//更新全部的骨头
+	//update all bone
 	D3DXMATRIX i;
 	D3DXMatrixIdentity(&i);
 	UpdateMatrices((Bone*)m_pRootBone, &i);
@@ -44,7 +49,7 @@ void Character::Load(char fileName[])
 }
 //-----------------------------------------------------------------------------
 // Name: CreateBox
-// Desc: 创始化假骨头
+// Desc: create a fake bone(a box) rotate and move to the center of bone 
 //-----------------------------------------------------------------------------
 void Character::CreateBoneBox(Bone* parent, Bone *bone, D3DXVECTOR3 size)
 {
@@ -52,7 +57,7 @@ void Character::CreateBoneBox(Bone* parent, Bone *bone, D3DXVECTOR3 size)
 	D3DXMATRIX w1 = bone->CombinedTransformationMatrix;
 	D3DXMATRIX w2 = parent->CombinedTransformationMatrix;
 
-	//提取变换
+	//Extraction Trandformation
 	D3DXVECTOR3 thisBone = D3DXVECTOR3(w1._41, w1._42, w1._43);
 	D3DXVECTOR3 ParentBone = D3DXVECTOR3(w2._41, w2._42, w2._43);
 	//D3DXCreateCylinder(g_pDevice, D3DXVec3Length(&(thisBone - ParentBone)) / 8, D3DXVec3Length(&(thisBone - ParentBone)) / 10, D3DXVec3Length(&(thisBone - ParentBone)), 4, 1, &parent->pCylinder, 0);
@@ -77,10 +82,11 @@ void Character::CreateBoneBox(Bone* parent, Bone *bone, D3DXVECTOR3 size)
 
 //-----------------------------------------------------------------------------
 // Name: DestroyFrame()
-// Desc: 为整个骨架创建伪骨头
+// Desc: Create a pseudo-bones throughout the skeleton
 //-----------------------------------------------------------------------------
 HRESULT Character::InitBoneCylinder(Bone* m_pRootBone, Bone *parent)
 {
+	//bone reference
 	Bone* Head_End = (Bone*)D3DXFrameFind(m_pRootBone, "Bone05");
 	Bone* Head = (Bone*)D3DXFrameFind(m_pRootBone, "Head");
 	Bone* Neck = (Bone*)D3DXFrameFind(m_pRootBone, "Bone03");
@@ -105,34 +111,6 @@ HRESULT Character::InitBoneCylinder(Bone* m_pRootBone, Bone *parent)
 	Bone* L_Foot = (Bone*)D3DXFrameFind(m_pRootBone, "Bone12");
 	Bone* R_Foot_End = (Bone*)D3DXFrameFind(m_pRootBone, "Bone15");
 	Bone* L_Foot_End = (Bone*)D3DXFrameFind(m_pRootBone, "Bone13");
-	/*
-	Bone* Head_End = (Bone*)D3DXFrameFind(m_pRootBone, "Head_End");
-	Bone* Head = (Bone*)D3DXFrameFind(m_pRootBone, "Head");
-	Bone* Neck = (Bone*)D3DXFrameFind(m_pRootBone, "Neck");
-	Bone* Pelvis = (Bone*)D3DXFrameFind(m_pRootBone, "Pelvis");
-	Bone* Spine = (Bone*)D3DXFrameFind(m_pRootBone, "Spine");
-	Bone* R_Shoulder = (Bone*)D3DXFrameFind(m_pRootBone, "Shoulder_Right");
-	Bone* L_Shoulder = (Bone*)D3DXFrameFind(m_pRootBone, "Shoulder_Left");
-	Bone* U_R_Arm = (Bone*)D3DXFrameFind(m_pRootBone, "Upper_Arm_Right");
-	Bone* U_L_Arm = (Bone*)D3DXFrameFind(m_pRootBone, "Upper_Arm_Left");
-	Bone* L_R_Arm = (Bone*)D3DXFrameFind(m_pRootBone, "Lower_Arm_Right");
-	Bone* L_L_Arm = (Bone*)D3DXFrameFind(m_pRootBone, "Lower_Arm_Left");
-	Bone* R_Hand = (Bone*)D3DXFrameFind(m_pRootBone, "Hand_Right");
-	Bone* L_Hand = (Bone*)D3DXFrameFind(m_pRootBone, "Hand_Left");
-
-	Bone* R_Pelvis = (Bone*)D3DXFrameFind(m_pRootBone, "Pelvis_Right");
-	Bone* L_Pelvis = (Bone*)D3DXFrameFind(m_pRootBone, "Pelvis_Left");
-	Bone* R_Thigh = (Bone*)D3DXFrameFind(m_pRootBone, "Thigh_Right");
-	Bone* L_Thigh = (Bone*)D3DXFrameFind(m_pRootBone, "Thigh_Left");
-	Bone* R_Calf = (Bone*)D3DXFrameFind(m_pRootBone, "Calf_Right");
-	Bone* L_Calf = (Bone*)D3DXFrameFind(m_pRootBone, "Calf_Left");
-	Bone* R_Foot = (Bone*)D3DXFrameFind(m_pRootBone, "Foot_Right");
-	Bone* L_Foot = (Bone*)D3DXFrameFind(m_pRootBone, "Foot_Left");
-	Bone* R_Foot_End = (Bone*)D3DXFrameFind(m_pRootBone, "Foot_Right_End");
-	Bone* L_Foot_End = (Bone*)D3DXFrameFind(m_pRootBone, "Foot_Left_End");*/
-	//D3DXQUATERNION q, q2;
-	//D3DXQuaternionIdentity(&q);
-	//D3DXQuaternionRotationAxis(&q2, &D3DXVECTOR3(0.0f, 0.0f, 1.0f), D3DX_PI * -0.5f);
 
 	//Head
 	CreateBoneBox(Head, Head_End, D3DXVECTOR3(0.2f, 0.2f, 0.3f));
@@ -204,7 +182,7 @@ void Character::UpdateMatrices(Bone* bone, D3DXMATRIX *parentMatrix)
 }
 
 //--------------------------------------------------------------------------------------
-// Desc: 渲染伪骨架
+// Desc: draw fake bone(geometry)
 //--------------------------------------------------------------------------------------
 void Character::DrawBoneCylinder(Bone* bone, Bone *parent, D3DXMATRIX world)
 {
@@ -236,7 +214,7 @@ void Character::DrawBoneCylinder(Bone* bone, Bone *parent, D3DXMATRIX world)
 	if (bone->pFrameFirstChild)DrawBoneCylinder((Bone*)bone->pFrameFirstChild, bone, world);
 }
 //--------------------------------------------------------------------------------------
-// Desc: 渲染角色
+// Desc: draw character
 //--------------------------------------------------------------------------------------
 void Character::Render(Bone* pFrame)
 {
@@ -250,14 +228,14 @@ void Character::Render(Bone* pFrame)
 		if (pMC->pSkinInfo == NULL)
 			return;
 
-		//获取骨骼结合表
+		//Get skeleton combination information
 		LPD3DXBONECOMBINATION pBC = (LPD3DXBONECOMBINATION)(pMC->pBoneCombinationBuf->GetBufferPointer());
 		DWORD dwAttrib, dwPalEntry;
 
-		//对每个调色板
+		//For each palette
 		for (dwAttrib = 0; dwAttrib < pMC->NumAttributeGroups; ++dwAttrib)
 		{
-			// 应用父级变换求联合矩阵
+			//Apply of the parent transform matrix 
 			for (dwPalEntry = 0; dwPalEntry < pMC->NumPaletteEntries; ++dwPalEntry)
 			{
 				DWORD dwMatrixIndex = pBC[dwAttrib].BoneId[dwPalEntry];
@@ -267,7 +245,7 @@ void Character::Render(Bone* pFrame)
 					pMC->ppBoneMatrixPtrs[dwMatrixIndex]);
 			}
 
-			//设置到效果框架
+			//sent to effect
 			m_pEffect->SetMatrixArray("amPalette",
 				m_amxWorkingPalette,
 				pMC->NumPaletteEntries);
@@ -276,13 +254,13 @@ void Character::Render(Bone* pFrame)
 
 			m_pEffect->SetInt("CurNumBones", pMC->NumInfl - 1);
 
-			// 设置technique
+			// set technique
 			if (FAILED(m_pEffect->SetTechnique("Skinning20")))
 				return;
 
 			UINT uiPasses, uiPass;
 
-			//渲染
+			//draw
 			m_pEffect->Begin(&uiPasses, 0 /*D3DXFX_DONOTSAVESTATE*/);
 			for (uiPass = 0; uiPass < uiPasses; ++uiPass)
 			{
@@ -302,7 +280,7 @@ void Character::Render(Bone* pFrame)
 }
 
 //-----------------------------------------------------------------------------
-// Desc: 获取效果指针
+// Desc: get effect point
 //-----------------------------------------------------------------------------
 LPD3DXEFFECT Character::GetEffect()
 {
@@ -312,20 +290,20 @@ LPD3DXEFFECT Character::GetEffect()
 	return m_pEffect;
 }
 //-----------------------------------------------------------------------------
-// Desc:获取设备
+// Desc:get device
 //-----------------------------------------------------------------------------
 LPDIRECT3DDEVICE9 Character::GetDevice()
 {
 	m_pDevice->AddRef();
 	return m_pDevice;
 }
-HRESULT    Character::Setup(LPDIRECT3DDEVICE9 pDevice)
+HRESULT Character::Setup(LPDIRECT3DDEVICE9 pDevice)
 {
-	//设置设备
+	//set device
 	m_pDevice = pDevice;
 	m_pDevice->AddRef();
 
-	//读取Effect框架
+	//read Effect framework from file
 	ID3DXBuffer *pErrorMsgs = NULL;
 	HR(D3DXCreateEffectFromFile(m_pDevice, "resources/fx/MultiAnimation.fx", NULL, NULL, D3DXSHADER_DEBUG, NULL, &m_pEffect, &pErrorMsgs));
 	return S_OK;
