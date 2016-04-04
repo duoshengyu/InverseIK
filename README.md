@@ -61,9 +61,7 @@ usage:
 
 2.Open "MyPick.sln" using Visual Studio 2013(Only test in version 2013).
 
-3.Change the Configuration to Debug.
-
-4.Run.
+3.Run.
 
 prerequest:
 
