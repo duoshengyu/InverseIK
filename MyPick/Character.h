@@ -62,7 +62,6 @@ private:
 	D3DXMATRIX m_mxWorld;
 
 	//get diameter of bounding ball
-	//获取模型包围球直径
 	float m_fBoundingRadius;
 protected:
 	DWORD m_dwWorkingPaletteSize;

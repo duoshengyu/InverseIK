@@ -138,7 +138,7 @@ HRESULT Character::InitBoneCylinder(Bone* m_pRootBone, Bone *parent)
 	return S_OK;
 }
 //--------------------------------------------------------------------------------------
-// Desc: ÉèÖÃ¹Ç÷À¾ØÕó
+// Desc: ÉèÖÃ¹Ç÷À¾ØÕE
 //--------------------------------------------------------------------------------------
 void Character::SetupBoneMatrixPointers(Bone *bone)
 {

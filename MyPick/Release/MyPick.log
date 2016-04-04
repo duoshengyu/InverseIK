@@ -1,8 +1,6 @@
 ﻿  BoneHierarchyLoader.cpp
-  Camera.cpp
+BoneHierarchyLoader.cpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
   Character.cpp
-  D3DApp.cpp
-  DirectInputClass.cpp
   InverseKinematics.cpp
   MyApp.cpp
 MyApp.cpp(70): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data

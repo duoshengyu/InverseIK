@@ -1,0 +1,12 @@
+﻿  MyApp.cpp
+d:\github\inverseik\mypick\myapp.cpp(70): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+d:\github\inverseik\mypick\myapp.cpp(434): warning C4244: '+=' : conversion from 'float' to 'LONG', possible loss of data
+d:\github\inverseik\mypick\myapp.cpp(435): warning C4244: '+=' : conversion from 'float' to 'LONG', possible loss of data
+  InverseKinematics.cpp
+  DirectInputClass.cpp
+  D3DApp.cpp
+  Character.cpp
+  Camera.cpp
+  BoneHierarchyLoader.cpp
+  Generating Code...
+  MyPick.vcxproj -> D:\GitHub\InverseIK\Debug\MyPick.exe
